@@ -1,0 +1,220 @@
+.react-flow,
+.DnDpreviewNode {
+    /* Custom Variables */
+    --xy-theme-selected: #F57DBD;
+    --xy-theme-hover: #C5C5C5;
+    --xy-theme-edge-hover: black;
+    --xy-theme-color-focus: #E8E8E8;
+
+    --xy-node-border-color-default: #EDEDED;
+    --xy-node-border-default: 1px solid var(--xy-node-border-color-default);
+
+    --xy-node-background-color-default: #FFFFFF;
+
+    --xy-node-boxshadow-default:
+      0px 3.54px 4.55px 0px #00000005,
+      0px 3.54px 4.55px 0px #0000000D,
+      0px 0.51px 1.01px 0px #0000001A;
+
+    --xy-handle-background-color-default: #ffffff;
+    --xy-handle-border-color-default: #AAAAAA;
+
+    --xy-edge-label-color-default: #505050;
+
+    --xy-node-dropshadow-default: 0px 3.54px 4.55px #00000012;
+}
+
+.react-flow.dark,
+.DnDpreviewNode.dark {
+    --xy-node-boxshadow-default:
+    0px 3.54px 4.55px 0px rgba(255, 255, 255, 0.05), /* light shadow */
+    0px 3.54px 4.55px 0px rgba(255, 255, 255, 0.13), /* medium shadow */
+    0px 0.51px 1.01px 0px rgba(255, 255, 255, 0.2);  /* smallest shadow */  
+    --xy-theme-color-focus: #535353;
+    --xy-node-border-color-default: #333333;
+    --xy-node-background-color-default: #1e1e1e;
+    --xy-node-dropshadow-default: 0px 3.54px 4.55px rgba(255,255,255,0.15);
+}
+
+.react-flow__handle {
+    width: 8px;
+    height: 8px;
+}
+
+.react-flow__handle-top {
+    top: -4px;
+}
+
+.react-flow__handle-bottom {
+    bottom: -4px;
+}
+
+.react-flow__node .function,
+.DnDpreviewNode.function{
+    width: 150px;
+    height: 50px;
+    border-radius: 8px;
+    border: var(--xy-node-border-default);
+    box-shadow: var(--xy-node-boxshadow-default);
+    background-color: var(--xy-node-background-color-default);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.react-flow__node .start,
+.react-flow__node .stop,
+.DnDpreviewNode.start,
+.DnDpreviewNode.stop{
+    width: 150px;
+    height: 50px;
+    border-radius: 25px;
+    border: var(--xy-node-border-default);
+    box-shadow: var(--xy-node-boxshadow-default);
+    background-color: var(--xy-node-background-color-default);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.react-flow__node .condition,
+.DnDpreviewNode.condition{
+    width: 100px;
+    height: 100px;
+    position: relative;
+    transform: rotate(45deg);
+    border: var(--xy-node-border-default);
+    box-shadow: var(--xy-node-boxshadow-default);
+    background-color: var(--xy-node-background-color-default);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.DnDpreviewNode.condition.sidebar{
+  transform:  rotate(45deg);
+  width: 50px;
+  height: 50px;
+}
+
+.DnDpreviewNode.condition >*{
+  transform: rotate(-45deg);
+}
+
+.react-flow__node .loop,
+.DnDpreviewNode.loop{
+    position: relative;
+    width: 150px;
+    height: 50px;
+    background-color: var(--xy-node-border-color-default);
+    align-items: center;
+    justify-content: center;
+    display:flex;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%);
+    z-index: 0;
+}
+
+.react-flow__node .loop::before,
+.DnDpreviewNode.loop::before{
+    content: "";
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    background-color: var(--xy-node-background-color-default);
+    clip-path: polygon(25% 2%, 75% 2%, 99% 36%, 99% 98%, 1% 98%, 1% 36%);
+    z-index: -1;
+}
+
+.react-flow__node .loop-wrapper{
+  filter: drop-shadow(var(--xy-node-dropshadow-default));
+}
+
+.react-flow__node .loopEnd,
+.DnDpreviewNode.loopEnd{
+    position: relative;
+    width: 150px;
+    height: 50px;
+    background-color: var(--xy-node-border-color-default);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 75% 100%, 25% 100%, 0% 65%);
+    z-index: 0;
+}
+
+.react-flow__node .loopEnd::before,
+.DnDpreviewNode.loopEnd::before{
+    content: "";
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    background-color: var(--xy-node-background-color-default);
+    clip-path: polygon(1% 2%, 99% 2%, 99% 64%, 75% 98%, 25% 98%, 1% 64%);
+    z-index: -1;
+}
+
+.react-flow__node .loopEnd-wrapper{
+  filter: drop-shadow(var(--xy-node-dropshadow-default));
+}
+
+.react-flow__node > *:hover{
+    border-color: var(--xy-theme-hover);
+}
+
+.react-flow__node .loop-wrapper:hover,
+.react-flow__node .loopEnd-wrapper:hover{
+    background-color: transparent;
+}
+
+.react-flow__node .loop-wrapper >*:hover,
+.react-flow__node .loopEnd-wrapper >*:hover{
+    background-color: var(--xy-theme-hover);
+}
+
+/* Add to existing Nodes.css */
+.preview-node {
+  transform-origin: center;
+  pointer-events: none;
+  margin-left: 8px;
+}
+
+.preview-node.loop,
+.preview-node.loopEnd {
+  width: 75px;
+  height: 25px;
+}
+/*
+.DnDpreviewNode {
+    width: 150px;
+    height: 50px;
+    border-radius: 25px;
+    border: var(--xy-node-border-default);
+    box-shadow: var(--xy-node-boxshadow-default);
+    background-color: var(--xy-node-background-color-default);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}*/
+
+.group-node {
+  resize: both;
+  overflow: auto;
+  min-width: 200px;
+  min-height: 150px;
+}
+
+.group-node:hover {
+  box-shadow: 0 0 0 2px var(--xy-theme-hover);
+}
+
+.group-node.selected {
+  box-shadow: 0 0 0 2px var(--xy-theme-selected);
+}
