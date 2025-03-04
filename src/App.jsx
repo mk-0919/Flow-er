@@ -761,7 +761,7 @@ const DnDFlow = () => {
                 <Controls />
                 <Background />
                 <EnhancedSidebar />
-                
+                <DevTools  />
                 {menu && (
                   <ContextMenu
                     onClick={onContextMenuClick}
