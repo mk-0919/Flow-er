@@ -28,6 +28,10 @@ import { nodeConfig } from '../config/nodeConfig';
 
 const DRAWER_WIDTH = 300;
 
+//ノードのプロパティを変更する際、その変更を描画するためにはsetSelectedElementで再レンダリングが必要
+//setSelectedeElementを呼び出すタイミングとonChangeを呼び出すタイミングは同一と考えられる
+//統合できるなら統合したい
+
 const NodePropertiesSidebar = ({ 
   selectedElement, 
   onClose, 
@@ -324,7 +328,7 @@ const NodePropertiesSidebar = ({
           key={field}
           fullWidth
           label={field}
-          value={nodeData[field] || ''}
+          DefaultValue={nodeData[field] || ''}
           onChange={(e) => onChange(selectedElement.id, { [field]: e.target.value })}
           margin="normal"
         />

@@ -129,14 +129,17 @@ const DnDFlow = () => {
 
   const handleElementChange = (elementId, changes) => {
     if (selectedElement.type === 'node') {
+      //console.log(selectedElement);
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === elementId) {
-            return {
+            const updatedNode = {
               ...node,
               data: { ...node.data, ...changes },
               style: { ...node.style, backgroundColor: changes.backgroundColor },
             };
+            setSelectedElement({...updatedNode, type: 'node', nodeType: updatedNode.type });
+            return updatedNode;
           }
           return node;
         })
