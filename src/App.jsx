@@ -159,11 +159,31 @@ const DnDFlow = () => {
   };
 
   const setFunctionNodeLabel = (updatedNode) => {
+    /*
     if(updatedNode.data.operationType === 'declare') updatedNode.data.label = `${updatedNode.data.variableName}を宣言`;
     if(updatedNode.data.operationType === 'assign') updatedNode.data.label = `${updatedNode.data.variableName}に代入`;
     if(updatedNode.data.operationType === 'arithmetic') updatedNode.data.label = `${updatedNode.data.variableName}に${updatedNode.data.operator}を適用`;
     if(updatedNode.data.operationType === 'output') updatedNode.data.label = `${updatedNode.data.variableName}を出力`;
     return updatedNode;
+    */
+    switch(updatedNode.data.operationType){
+      case 'declare': 
+        initialValue = `=${updatedNode.data.initialValue}` 
+        updatedNode.data.label = `${updatedNode.data.variableName}を宣言`; 
+        break;
+      case 'assign': 
+        updatedNode.data.label = `${updatedNode.data.variableName}に代入`; 
+        break;
+      case 'arithmetic': 
+        updatedNode.data.label = `${updatedNode.data.variableName}に${updatedNode.data.operator}を適用`; 
+        break;
+      case 'output': 
+        updatedNode.data.label = `${updatedNode.data.variableName}を出力`; 
+        break;
+      default: 
+        updatedNode.data.label = 'undefined';
+        break;
+    }
   }
 
   useEffect(() => {
@@ -774,7 +794,7 @@ const DnDFlow = () => {
                 <Controls />
                 <Background />
                 <EnhancedSidebar />
-                <DevTools  />
+                
                 {menu && (
                   <ContextMenu
                     onClick={onContextMenuClick}
