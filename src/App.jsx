@@ -129,15 +129,17 @@ const DnDFlow = () => {
 
   const handleElementChange = (elementId, changes) => {
     if (selectedElement.type === 'node') {
-      //console.log(selectedElement);
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === elementId) {
-            const updatedNode = {
+            let updatedNode = {
               ...node,
               data: { ...node.data, ...changes },
               style: { ...node.style, backgroundColor: changes.backgroundColor },
             };
+            if(updatedNode.type === 'function'){
+              updatedNode = setFunctionNodeLabel(updatedNode);
+            }
             setSelectedElement({...updatedNode, type: 'node', nodeType: updatedNode.type });
             return updatedNode;
           }
@@ -155,6 +157,14 @@ const DnDFlow = () => {
       );
     }
   };
+
+  const setFunctionNodeLabel = (updatedNode) => {
+    if(updatedNode.data.operationType === 'declare') updatedNode.data.label = `${updatedNode.data.variableName}を宣言`;
+    if(updatedNode.data.operationType === 'assign') updatedNode.data.label = `${updatedNode.data.variableName}に代入`;
+    if(updatedNode.data.operationType === 'arithmetic') updatedNode.data.label = `${updatedNode.data.variableName}に${updatedNode.data.operator}を適用`;
+    if(updatedNode.data.operationType === 'output') updatedNode.data.label = `${updatedNode.data.variableName}を出力`;
+    return updatedNode;
+  }
 
   useEffect(() => {
     const handleKeyDown = (e) => {
