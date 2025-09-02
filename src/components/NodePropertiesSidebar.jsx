@@ -28,10 +28,6 @@ import { nodeConfig } from '../config/nodeConfig';
 
 const DRAWER_WIDTH = 300;
 
-//ノードのプロパティを変更する際、その変更を描画するためにはsetSelectedElementで再レンダリングが必要
-//setSelectedeElementを呼び出すタイミングとonChangeを呼び出すタイミングは同一と考えられる
-//統合できるなら統合したい
-
 const NodePropertiesSidebar = ({ 
   selectedElement, 
   onClose, 
@@ -264,7 +260,7 @@ const NodePropertiesSidebar = ({
             <FormControl fullWidth margin="normal">
               <InputLabel>操作タイプ</InputLabel>
               <Select
-                defaultValue={nodeData.operationType || ''}
+                value={nodeData.operationType || ''}
                 onChange={(e) => handleFunctionTypeChange(e.target.value)}
               >
                 {nodeConfig.function.operations.map(op => (
@@ -285,11 +281,18 @@ const NodePropertiesSidebar = ({
   const handleFunctionTypeChange = (operationType) => {
     const operation = nodeConfig.function.operations.find(op => op.value === operationType);
     const newData = { operationType };
+    const nodeData = selectedElement.data || {};
     
     // 操作タイプに応じた初期値設定
     if (operation.additionalFields) {
       operation.additionalFields.forEach(field => {
-        newData[field] = '';
+        newData[field] = nodeData[field] || '';//変更前に同名のデータが有れば引き継ぐ
+      });
+    }
+
+    if (operation.hideAdditionalFields) {
+      operation.hideAdditionalFields.forEach(field => {
+        newData[field] = nodeData[field] || '';
       });
     }
     
@@ -310,7 +313,7 @@ const NodePropertiesSidebar = ({
           <FormControl key={field} fullWidth margin="normal">
             <InputLabel>演算子</InputLabel>
             <Select
-              DefaultValue={nodeData[field] || ''}
+              value={nodeData[field] || ''}
               onChange={(e) => onChange(selectedElement.id, { [field]: e.target.value })}
             >
               {nodeConfig.function.arithmeticOperators.map(op => (
@@ -328,7 +331,7 @@ const NodePropertiesSidebar = ({
           key={field}
           fullWidth
           label={field}
-          DefaultValue={nodeData[field] || ''}
+          value={nodeData[field] || ''}
           onChange={(e) => onChange(selectedElement.id, { [field]: e.target.value })}
           margin="normal"
         />

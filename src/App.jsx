@@ -159,23 +159,26 @@ const DnDFlow = () => {
   };
 
   const setFunctionNodeLabel = (updatedNode) => {
-    /*
-    if(updatedNode.data.operationType === 'declare') updatedNode.data.label = `${updatedNode.data.variableName}を宣言`;
-    if(updatedNode.data.operationType === 'assign') updatedNode.data.label = `${updatedNode.data.variableName}に代入`;
-    if(updatedNode.data.operationType === 'arithmetic') updatedNode.data.label = `${updatedNode.data.variableName}に${updatedNode.data.operator}を適用`;
-    if(updatedNode.data.operationType === 'output') updatedNode.data.label = `${updatedNode.data.variableName}を出力`;
-    return updatedNode;
-    */
+    var initialValue = "";
+    var labelText = "";
+
     switch(updatedNode.data.operationType){
       case 'declare': 
-        initialValue = `=${updatedNode.data.initialValue}` 
-        updatedNode.data.label = `${updatedNode.data.variableName}を宣言`; 
+        initialValue = updatedNode.data.value ? `=${updatedNode.data.value}` : '';
+        labelText = updatedNode.data.variableName ? `${updatedNode.data.variableName}${initialValue}を` : '';
+        updatedNode.data.label = `${labelText}宣言`; 
         break;
       case 'assign': 
-        updatedNode.data.label = `${updatedNode.data.variableName}に代入`; 
+        initialValue = updatedNode.data.value ? `に${updatedNode.data.value}` : '';
+        labelText = updatedNode.data.variableName ? `${updatedNode.data.variableName}${initialValue}を` : '';
+        updatedNode.data.label = `${labelText}代入`; 
         break;
       case 'arithmetic': 
-        updatedNode.data.label = `${updatedNode.data.variableName}に${updatedNode.data.operator}を適用`; 
+        var target = updatedNode.data.target ? `${updatedNode.data.target}=` : '';
+        var operand1 = updatedNode.data.operand1 ? `${updatedNode.data.operand1}` : '';
+        var operand2 = updatedNode.data.operand2 ? `${updatedNode.data.operand2}` : '';
+        labelText = `${target}${operand1}${updatedNode.data.operator}${operand2}`;
+        updatedNode.data.label = labelText ? `${labelText}` : `四則演算`; 
         break;
       case 'output': 
         updatedNode.data.label = `${updatedNode.data.variableName}を出力`; 
@@ -184,6 +187,7 @@ const DnDFlow = () => {
         updatedNode.data.label = 'undefined';
         break;
     }
+    return updatedNode;
   }
 
   useEffect(() => {
@@ -794,7 +798,7 @@ const DnDFlow = () => {
                 <Controls />
                 <Background />
                 <EnhancedSidebar />
-                
+                <DevTools />
                 {menu && (
                   <ContextMenu
                     onClick={onContextMenuClick}

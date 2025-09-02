@@ -30,13 +30,14 @@ export const nodeConfig = {
   function: {
     operations: [
       { value: 'declare', label: '変数宣言', 
-        additionalFields: ['variableName', 'initialValue'] },
+        additionalFields: ['variableName', 'value'] },
       { value: 'assign', label: '変数代入',
         additionalFields: ['variableName', 'value'] },
       { value: 'arithmetic', label: '四則演算',
-        additionalFields: ['result', 'operand1', 'operator', 'operand2'] },
+        additionalFields: ['target','operand1', 'operator', 'operand2'],
+        hideAdditionalFields: ['result'],},//サイドバーに表示されないFields
       { value: 'output', label: '出力',
-        additionalFields: ['outputValue'] }
+        additionalFields: ['variableName'] }
     ],
     arithmeticOperators: [
       { value: '+', label: '加算' },

@@ -9,7 +9,7 @@ export const initialNodes  = [
   { 
     id: '2', 
     type: 'function', 
-    data: { code: 'env.count = 0;', label: 'countを宣言', operationType: "declare" }, 
+    data: { code: 'env.count = 0;', label: 'count=0を宣言', operationType: "declare", variableName: "count", value: "0" }, 
     position: { x: 50, y: 150 } 
   },
   // ループ開始。data.iterations で反復回数、data.childNodes にループ内で実行するノードを指定（グループ化）
@@ -23,7 +23,7 @@ export const initialNodes  = [
   { 
     id: '4', 
     type: 'function', 
-    data: { code: 'env.count += 1;', label: 'count++'}, 
+    data: { code: 'env.count += 1;', label: 'count = count + 1', operationType: "arithmetic", target: "count", operator: "+", operand1: "count", operand2: "1"}, 
     position: { x: 50, y: 350 }, 
   },
   // ループ終了（ここでは処理上のマーカーとして扱い）
@@ -36,7 +36,7 @@ export const initialNodes  = [
   { 
     id: '6', 
     type: 'function', 
-    data: { code: 'env.output = "Final count: " + env.count;', label: 'countを出力', operationType: "output"}, 
+    data: { code: 'env.output = "Final count: " + env.count;', label: 'countを出力', operationType: "output", variableName: "count"}, 
     position: { x: 50, y: 550 } 
   },
   { 
