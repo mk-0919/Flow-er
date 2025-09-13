@@ -17,6 +17,7 @@ import LoopNode from './nodes/LoopNode';
 import ConditionNode from './nodes/ConditionNode';
 import StopNode from './nodes/StopNode';
 import LoopEndNode from './nodes/LoopEndNode';
+import GroupNode from './nodes/GroupNode';
 
 import useStore from './components/store';
 import { useShallow } from 'zustand/react/shallow';
@@ -41,6 +42,7 @@ const nodeTypes = {
   stop: StopNode,
   loopEnd: LoopEndNode,
   function: FunctionNode,
+  group: GroupNode,
 };
 
 const edgeTypes = {
@@ -63,6 +65,7 @@ const selector = (state) => ({
   ungroup: state.ungroup,
   selectedNodes: state.selectedNodes,
   adjustGroupSize: state.adjustGroupSize,
+  checkAndAutoGroup: state.checkAndAutoGroup,
 });
 
 
@@ -74,7 +77,7 @@ const DnDFlow = () => {
   const reactFlowWrapper = useRef(null);
   const { nodes, edges, startNodeDrag, stopNodeDrag, setNodes, setEdges, 
     onNodesChange, onEdgesChange, onConnect, undo, redo,
-    createGroup, ungroup, selectedNodes, adjustGroupSize} = useStore(
+    createGroup, ungroup, selectedNodes, adjustGroupSize, checkAndAutoGroup} = useStore(
     useShallow(selector),
   );
   const { screenToFlowPosition, getZoom } = useReactFlow();
@@ -228,9 +231,23 @@ const DnDFlow = () => {
 
   }, [undo, redo]);
 
+  // 初回レンダリング時に自動グループ化を実行
+  useEffect(() => {
+    // タイムアウトを設けて、初期ノードのレンダリングを待つ
+    const timer = setTimeout(() => checkAndAutoGroup(), 100);
+    return () => clearTimeout(timer);
+  }, [checkAndAutoGroup]);
+
   const onNodeContextMenu = useCallback(
     (event, node) => {
       event.preventDefault();
+
+      // 複数のノードが選択されており、右クリックされたノードが選択範囲に含まれる場合
+      if (selectedNodes.length > 1 && selectedNodes.some(n => n.id === node.id)) {
+        // 複数選択用のコンテキストメニューを表示する
+        onSelectionContextMenu(event);
+        return;
+      }
       const items = [
         { key: 'copy', label: 'Copy' },
         { key: 'duplicate', label: 'Duplicate' },
@@ -249,7 +266,7 @@ const DnDFlow = () => {
         nodeId: node.id,
       });
     },
-    []
+    [selectedNodes]
   );
 
   const onEdgeContextMenu = useCallback(
@@ -293,13 +310,22 @@ const DnDFlow = () => {
   const onSelectionContextMenu = useCallback(
     (event) => {
       event.preventDefault();
-      const menuItems = [{ key: 'group', label: 'Group Selected' }];
+
+      // 選択されたノードに、すでに親を持つ（グループ化されている）ものが含まれていないかチェック
+      const isGroupable = selectedNodes.length > 1 && selectedNodes.every(node => !node.parentId);
+
+      const menuItems = [{
+        key: 'group',
+        label: 'Group Selected',
+        disabled: !isGroupable,
+        title: !isGroupable ? '選択されたノードには、すでにグループ化されているノードが含まれています。' : undefined,
+      }];
 
       setMenu({
         x: event.clientX,
         y: event.clientY,
         items: menuItems,
-    })},[]
+    })},[selectedNodes]
   );
 
   const onContextMenuClick = useCallback(
@@ -788,6 +814,8 @@ const DnDFlow = () => {
                 onPaneContextMenu={onPaneContextMenu}
                 onSelectionContextMenu={onSelectionContextMenu}
                 fitView
+                multiSelectionKeyCode="Shift"
+                selectionOnDrag={true}
                 style={{ background: theme.palette.background.default }}
                 colorMode={ themeMode }
                 nodeTypes={nodeTypes}

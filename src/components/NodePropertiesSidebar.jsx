@@ -294,6 +294,16 @@ const NodePropertiesSidebar = ({
           </Box>
         );
 
+      case 'group':
+        return (
+          <TextField
+            fullWidth
+            label="Group Name"
+            value={nodeData.label || ''}
+            onChange={(e) => onChange(selectedElement.id, { label: e.target.value })}
+            margin="normal"
+          />
+        );
       // ... 他のケース
     }
   };

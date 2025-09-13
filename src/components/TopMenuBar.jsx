@@ -32,8 +32,13 @@ const TopMenuBar = ({ toggleTheme }) => {
     }))
   );
 
+  // グループ化が可能かどうかの判定ロジック
+  // 1. 複数のノードが選択されている
+  // 2. かつ、選択されたノードのすべてが、どのグループにも属していない (parentIdがない)
+  const isGroupable = selectedNodes.length > 1 && selectedNodes.every(node => !node.parentId);
+
   const handleGroup = () => {
-    if (selectedNodes.length > 1) {
+    if (isGroupable) {
       createGroup(selectedNodes.map(n => n.id));
     }
   };
@@ -74,7 +79,7 @@ const TopMenuBar = ({ toggleTheme }) => {
             variant="contained"
             startIcon={<Group />}
             onClick={handleGroup}
-            disabled={selectedNodes.length <= 1}
+            disabled={!isGroupable}
             size="small"
             color="primary"
           >

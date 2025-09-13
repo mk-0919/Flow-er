@@ -32,6 +32,44 @@ const calculateGroupBounds = (nodes) => {
   };
 };
 
+/**
+ * startノードからstopノードまでのパスを探索するヘルパー関数 (DFS: 深さ優先探索)
+ * @param {string} startNodeId - 探索を開始するノードのID
+ * @param {Array} allNodes - 全てのノードの配列
+ * @param {Array} allEdges - 全てのエッジの配列
+ * @returns {Array|null} - stopノードまでのパスに含まれるノードIDの配列、またはパスが見つからない場合はnull
+ */
+const findPathToStop = (startNodeId, allNodes, allEdges) => {
+  const path = [];
+  const visited = new Set();
+  let stopNodeFound = false;
+
+  const dfs = (nodeId) => {
+    if (visited.has(nodeId) || stopNodeFound) {
+      return;
+    }
+    visited.add(nodeId);
+    path.push(nodeId);
+
+    const currentNode = allNodes.find(n => n.id === nodeId);
+    if (currentNode && currentNode.type === 'stop') {
+      stopNodeFound = true;
+      return;
+    }
+
+    const outgoingEdges = allEdges.filter(e => e.source === nodeId);
+    for (const edge of outgoingEdges) {
+      dfs(edge.target);
+      if (stopNodeFound) return;
+    }
+
+    if (!stopNodeFound) path.pop();
+  };
+
+  dfs(startNodeId);
+  return stopNodeFound ? path : null;
+};
+
   const useStore = create((set, get) => ({
     // 状態の初期値
     nodes: initialNodes,
@@ -66,13 +104,30 @@ const calculateGroupBounds = (nodes) => {
 
     // ReactFlow の onNodesChange のラッパー
     onNodesChange: (changes) => {
-      const { nodes, dragging, } = get();
-      const updatedNodes = applyNodeChanges(changes, nodes);
+      const { nodes } = get();
+      const nextChanges = changes.reduce((acc, change) => {
+        if (change.type === 'remove') {
+          const nodeToRemove = nodes.find(n => n.id === change.id);
+          // 削除されるのがグループノードの場合、子ノードを解放する
+          if (nodeToRemove && nodeToRemove.type === 'group') {
+            const childNodes = nodes.filter(n => n.parentId === change.id);
+            childNodes.forEach(child => {
+              acc.push({
+                type: 'select',
+                id: child.id,
+                selected: false,
+              });
+            });
+            get().ungroup(change.id, false); // 履歴保存はしない
+          }
+        }
+        acc.push(change);
+        return acc;
+      }, []);
+
+      const updatedNodes = applyNodeChanges(nextChanges, get().nodes);
       // selectedNodes を更新
-      const selectedNodes = updatedNodes.filter(node => node.selected);
-      set({ nodes: updatedNodes,
-        selectedNodes: selectedNodes,
-       });
+      set({ nodes: updatedNodes, selectedNodes: updatedNodes.filter(node => node.selected) });
     },
 
     // ReactFlow の onEdgesChange のラッパー
@@ -132,7 +187,7 @@ const calculateGroupBounds = (nodes) => {
           saveHistory();
           const updatedEdges = addEdge({...connection, type: 'floating', markerEnd: { type: MarkerType.Arrow}}, edges);
           set({ edges: updatedEdges });
-          //checkAndAutoGroup();
+          get().checkAndAutoGroup(connection.source);
         }
       },
 
@@ -176,12 +231,13 @@ const calculateGroupBounds = (nodes) => {
       const groupBounds = calculateGroupBounds(groupedNodes);
     
       const groupId = get_groupId();
+      const finalLabel = label === 'New Group' ? groupId : label;
       const groupNode = {
         id: groupId,
         type: 'group',
         position: { x: groupBounds.x, y: groupBounds.y },
         data: {
-          label,
+          label: finalLabel,
           childNodes: nodeIds
         },
         style: {
@@ -204,19 +260,21 @@ const calculateGroupBounds = (nodes) => {
       console.log(groupNode)
     },
 
-    ungroup: (groupId) => {
+    ungroup: (groupId, save = true) => {
       const { nodes, saveHistory } = get();
-      saveHistory();
-      const group = get().nodes.find(g => g.id === groupId);
+      if (save) saveHistory();
+      const group = nodes.find(g => g.id === groupId);
+      if (!group) return;
 
       const updatedNodes = nodes.map(node => 
         node.parentId === groupId 
-          ? { ...node, parentId: undefined, extent: undefined, expandParent: false,
+          ? { ...node, 
+            parentId: undefined, extent: undefined, expandParent: false,
             position: {
               x: node.position.x + group.position.x,
               y: node.position.y + group.position.y
             },
-           }
+          }
           : node
       ).filter(node => node.id !== groupId);
       set({
@@ -225,24 +283,56 @@ const calculateGroupBounds = (nodes) => {
       });
     },
 
-    //StartノードとStopノードを自動的にグループ化する関数(未完成)
-    checkAndAutoGroup: () => {
+    //StartノードとStopノードを自動的にグループ化する関数
+    checkAndAutoGroup: (nodeIdInFlow) => {
       if (!get().autoGroupingEnabled) return;
 
-      const { nodes, edges } = get();
-      const startNodes = nodes.filter(n => n.type === 'start');
-      const stopNodes = nodes.filter(n => n.type === 'stop');
+      const { nodes, edges, createGroup } = get();
+      const alreadyGroupedNodeIds = new Set(nodes.filter(n => n.parentId).map(n => n.id));
 
-      startNodes.forEach(startNode => {
-        const connectedNodes = findConnectedNodes(startNode.id, edges);
-        const hasStopNode = connectedNodes.some(id => 
-          nodes.find(n => n.id === id && n.type === 'stop')
-        );
-
-        if (hasStopNode) {
-          get().createGroup([startNode.id, ...connectedNodes], 'Flow Group');
+      const groupFlowFromStartNode = (startNode) => {
+        if (!startNode || startNode.parentId || alreadyGroupedNodeIds.has(startNode.id)) {
+          return;
         }
-      });
+        const pathNodeIds = findPathToStop(startNode.id, nodes, edges);
+        if (pathNodeIds && pathNodeIds.length > 1) {
+          const isAnyNodeInPathGrouped = pathNodeIds.some(id => alreadyGroupedNodeIds.has(id));
+          if (!isAnyNodeInPathGrouped) {
+            createGroup(pathNodeIds);
+          }
+        }
+      };
+
+      if (nodeIdInFlow) {
+        // nodeIdInFlowが指定されている場合、そのノードが含まれるフローのみをチェック
+        const findStartNodeOfFlow = (startId) => {
+          const q = [startId];
+          const visited = new Set([startId]);
+          let potentialStartNode = null;
+          while (q.length > 0) {
+            const currentId = q.shift();
+            const currentNode = nodes.find(n => n.id === currentId);
+            if (currentNode && currentNode.type === 'start') {
+              potentialStartNode = currentNode;
+              break;
+            }
+            const incomingEdges = edges.filter(e => e.target === currentId);
+            for (const edge of incomingEdges) {
+              if (!visited.has(edge.source)) {
+                visited.add(edge.source);
+                q.push(edge.source);
+              }
+            }
+          }
+          return potentialStartNode;
+        };
+        const startNode = findStartNodeOfFlow(nodeIdInFlow);
+        groupFlowFromStartNode(startNode);
+      } else {
+        // nodeIdInFlowが指定されていない場合、すべてのstartノードをチェック
+        const startNodes = nodes.filter(n => n.type === 'start');
+        startNodes.forEach(groupFlowFromStartNode);
+      }
     },
 
     toggleAutoGrouping: () => {

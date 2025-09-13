@@ -209,6 +209,8 @@
   overflow: auto;
   min-width: 200px;
   min-height: 150px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
 }
 
 .group-node:hover {
@@ -217,4 +219,18 @@
 
 .group-node.selected {
   box-shadow: 0 0 0 2px var(--xy-theme-selected);
+}
+
+.group-node-label-panel {
+  margin: 0;
+  padding: 0;
+}
+
+.group-node-label {
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-bottom-left-radius: 4px;
+  color: var(--xy-node-color, var(--xy-node-color-default));
+  padding-right: 10px;
 }
