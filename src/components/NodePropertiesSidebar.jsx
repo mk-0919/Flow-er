@@ -254,13 +254,33 @@ const NodePropertiesSidebar = ({
           </Box>
         );
 
+      case 'loop':
+        return (
+          <Box>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>ループタイプ</InputLabel>
+              <Select
+                value={nodeData.loopType || 'infinite'}
+                onChange={(e) => handleLoopTypeChange(e.target.value)}
+              >
+                {nodeConfig.loop.types.map(op => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {renderLoopAdditionalFields()}
+          </Box>
+        );
+
       case 'function':
         return (
           <Box>
             <FormControl fullWidth margin="normal">
               <InputLabel>操作タイプ</InputLabel>
               <Select
-                value={nodeData.operationType || ''}
+                defaultValue={nodeData.operationType || ''}
                 onChange={(e) => handleFunctionTypeChange(e.target.value)}
               >
                 {nodeConfig.function.operations.map(op => (
@@ -276,6 +296,27 @@ const NodePropertiesSidebar = ({
 
       // ... 他のケース
     }
+  };
+
+  const handleLoopTypeChange = (loopType) => {
+    const loopConfig = nodeConfig.loop.types.find(t => t.value === loopType);
+    const newData = { loopType };
+    const nodeData = selectedElement.data || {};
+
+    if (loopType === 'conditional') {
+      if (loopConfig.additionalFields) {
+        loopConfig.additionalFields.forEach(field => {
+          newData[field] = nodeData[field] || '';
+        });
+      }
+      const { leftOperand, operator, rightOperand } = newData;
+      newData.label = `${leftOperand || ''} ${operator || ''} ${rightOperand || ''}`.trim();
+    } else {
+      // 'infinite' または他のタイプの場合のラベルをリセット
+      newData.label = 'Loop';
+    }
+    
+    onChange(selectedElement.id, newData);
   };
 
   const handleFunctionTypeChange = (operationType) => {
@@ -297,6 +338,60 @@ const NodePropertiesSidebar = ({
     }
     
     onChange(selectedElement.id, newData);
+  };
+
+  const handleLoopConditionalChange = (fieldName, value) => {
+    const nodeData = { ...selectedElement.data, [fieldName]: value };
+    const { leftOperand, operator, rightOperand } = nodeData;
+    const newLabel = `${leftOperand || ''} ${operator || ''} ${rightOperand || ''}`.trim();
+    
+    onChange(selectedElement.id, { 
+      [fieldName]: value,
+      label: newLabel 
+    });
+  };
+
+  const renderLoopAdditionalFields = () => {
+    const nodeData = selectedElement.data || {};
+    if (nodeData.loopType !== 'conditional') {
+      return null;
+    }
+
+    const loopTypeConfig = nodeConfig.loop.types.find(t => t.value === 'conditional');
+    if (!loopTypeConfig || !loopTypeConfig.additionalFields) {
+      return null;
+    }
+
+    return loopTypeConfig.additionalFields.map(field => {
+      if (field === 'operator') {
+        return (
+          <FormControl key={field} fullWidth margin="normal">
+            <InputLabel>演算子</InputLabel>
+            <Select
+              value={nodeData[field] || ''}
+              onChange={(e) => handleLoopConditionalChange(field, e.target.value)}
+            >
+              {nodeConfig.loop.operators.map(op => (
+                <MenuItem key={op.value} value={op.value}>
+                  {op.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        );
+      }
+
+      return (
+        <TextField
+          key={field}
+          fullWidth
+          label={field}
+          value={nodeData[field] || ''}
+          onChange={(e) => handleLoopConditionalChange(field, e.target.value)}
+          margin="normal"
+        />
+      );
+    });
   };
 
   const renderFunctionAdditionalFields = () => {

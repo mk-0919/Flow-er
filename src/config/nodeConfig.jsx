@@ -24,8 +24,17 @@ export const nodeConfig = {
   loop: {
     types: [
       { value: 'infinite', label: '無限ループ' },
-      { value: 'conditional', label: '条件付きループ' }
-    ]
+      { value: 'conditional', label: '条件付きループ',
+        additionalFields: ['leftOperand', 'operator', 'rightOperand'] }
+    ],
+    operators: [
+      { value: '>', label: '大なり (>)' },
+      { value: '<', label: '小なり (<)' },
+      { value: '>=', label: '以上 (>=)' },
+      { value: '<=', label: '以下 (<=)' },
+      { value: '===', label: '等しい (===)' },
+      { value: '!==', label: '等しくない (!==)' }
+    ],
   },
   function: {
     operations: [
