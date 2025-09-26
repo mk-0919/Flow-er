@@ -12,14 +12,14 @@ export const initialNodes  = [
     data: { code: 'env.count = 0;', label: 'count=0を宣言', operationType: "declare", variableName: "count", value: "0" }, 
     position: { x: 50, y: 150 } 
   },
-  // ループ開始。data.iterations で反復回数、data.childNodes にループ内で実行するノードを指定（グループ化）
+  // ループ開始。data.condition でループの継続条件を指定します。
   { 
     id: '3', 
     type: 'loop', 
     data: { condition: 'env.count <= 3', label: 'count <= 3' }, 
     position: { x: 50, y: 250 } 
     },
-  // ループ内の処理：カウントアップ（例として env.count に 1 加算）
+  // ループ内の処理：カウントアップ（env.count に 1 加算）
   { 
     id: '4', 
     type: 'function', 
