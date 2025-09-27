@@ -142,8 +142,8 @@ const DnDFlow = () => {
               data: { ...node.data, ...changes },
               style: { ...node.style, backgroundColor: changes.backgroundColor },
             };
-            if (changes.label) {
-              //ラベルが直接変更された場合の処理(Groupとか)
+            if (changes.label && updatedNode.type !== 'group') {
+              //ラベルが直接変更された場合の処理
               updatedNode = setCodeFromLabel(updatedNode);
             } else if (updatedNode.type === 'function') {
               updatedNode = setFunctionNodeCodeAndLabel(updatedNode);
