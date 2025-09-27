@@ -76,32 +76,21 @@ const NodePropertiesSidebar = ({
   const renderProperties = () => {
     switch (selectedElement.type) {
       case 'node':
-        switch (activeTab) {
-          case 0:
-            return (
-              <>
-                {renderNodeTypeSpecificControls()}
-                <Box mt={2}>
-                  <Typography variant="subtitle1">Background Color</Typography>
-                  <ChromePicker
-                    color={selectedElement.style?.backgroundColor || '#fff'}
-                    onChange={(color) => onChange(selectedElement.id, { backgroundColor: color.hex })}
-                  />
-                </Box>
-              </>
-            );
-          case 1:
-            return (
-                <TextField
-                  fullWidth
-                  label="Label"
-                  value={selectedElement.data?.label || ''}
-                  onChange={(e) => onChange(selectedElement.id, { label: e.target.value })}
-                  margin="normal"
+        if (activeTab === 0) { // Data tab (formerly index 1)
+          return (
+            <>
+              {renderNodeTypeSpecificControls()}
+              <Box mt={2}>
+                <Typography variant="subtitle1">Background Color</Typography>
+                <ChromePicker
+                  color={selectedElement.style?.backgroundColor || '#fff'}
+                  onChange={(color) => onChange(selectedElement.id, { backgroundColor: color.hex })}
                 />
-            )
-          case 2:
-            return (
+              </Box>
+            </>
+          );
+        } else if (activeTab === 1) { // Console tab (formerly index 2)
+          return (
               <Box sx={{ 
                 p: 2,
                 height: '100%',
@@ -195,9 +184,10 @@ const NodePropertiesSidebar = ({
                     __html: logMessages 
                   }}
                 />
-              </Box>
-            );
-          }
+            </Box>
+          );
+        }
+        return null; // Should not happen with current tab setup
       case 'edge':
         return (
           <TextField
@@ -484,8 +474,8 @@ const NodePropertiesSidebar = ({
             <Close />
           </IconButton>
         </Box>
-        <Tabs value={activeTab} onChange={handleTabChange}>
-          <Tab label="Style" />
+        <Tabs value={activeTab} onChange={handleTabChange} aria-label="Node properties tabs">
+          {/* <Tab label="Style" /> Removed as per request */}
           <Tab label="Data" />
           <Tab label="Console" />
         </Tabs>
