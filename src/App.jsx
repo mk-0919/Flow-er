@@ -514,8 +514,11 @@ const DnDFlow = () => {
             appendLog(`Function 実行後の環境: ${JSON.stringify(envObj)}`);
           }
           if (node.data.operationType === 'output') {
-            const outputValue = new Function('env', `"use strict"; "env.output = env.count";`);
-            appendLog(`${JSON.stringify(envObj)}`, 'info', true);
+            const variableName = node.data.variableName;
+            if (variableName && envObj.hasOwnProperty(variableName)) {
+              const value = envObj[variableName];
+              appendLog(`${variableName}: ${value}`, 'info', true);
+            }
           }
           break;
         case 'condition':

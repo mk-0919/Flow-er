@@ -36,7 +36,7 @@ export const initialNodes  = [
   { 
     id: '6', 
     type: 'function', 
-    data: { code: 'env.output = "Final count: " + env.count;', label: 'countを出力', operationType: "output", variableName: "count"}, 
+    data: { code: 'env.output = env.count;', label: 'countを出力', operationType: "output", variableName: "count"}, 
     position: { x: 50, y: 550 } 
   },
   { 
