@@ -343,12 +343,6 @@ const NodePropertiesSidebar = ({
           newData[field] = nodeData[field] || '';
         });
       }
-      const { leftOperand, operator, rightOperand } = newData;
-      const newLabel = `${leftOperand || ''} ${operator || ''} ${rightOperand || ''}`.trim();
-      newData.label = newLabel || 'conditional loop';
-    } else {
-      // 'infinite' または他のタイプの場合のラベルをリセット
-      newData.label = 'Loop';
     }
     
     onChange(selectedElement.id, newData);
@@ -377,12 +371,9 @@ const NodePropertiesSidebar = ({
 
   const handleLoopConditionalChange = (fieldName, value) => {
     const nodeData = { ...selectedElement.data, [fieldName]: value };
-    const { leftOperand, operator, rightOperand } = nodeData;
-    const newLabel = `${leftOperand || ''} ${operator || ''} ${rightOperand || ''}`.trim() || 'conditional loop';
-    
+ 
     onChange(selectedElement.id, { 
       [fieldName]: value,
-      label: newLabel
     });
   };
 

@@ -16,7 +16,7 @@ export const initialNodes  = [
   { 
     id: '3', 
     type: 'loop', 
-    data: { label: 'count <= 3' }, 
+    data: { label: 'count <= 3' ,loopType: 'conditional' , leftOperand: 'count', operator: '<=', rightOperand: '3'}, 
     position: { x: 50, y: 250 } 
     },
   // ループ内の処理：カウントアップ（env.count に 1 加算）

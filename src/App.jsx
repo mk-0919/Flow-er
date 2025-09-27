@@ -143,9 +143,12 @@ const DnDFlow = () => {
               style: { ...node.style, backgroundColor: changes.backgroundColor },
             };
             if (changes.label) {
+              //ラベルが直接変更された場合の処理(Groupとか)
               updatedNode = setCodeFromLabel(updatedNode);
             } else if (updatedNode.type === 'function') {
               updatedNode = setFunctionNodeCodeAndLabel(updatedNode);
+            } else if (updatedNode.type === 'loop') {
+              updatedNode = setLoopNodeCodeAndLabel(updatedNode);
             }
 
             setSelectedElement({...updatedNode, type: 'node', nodeType: updatedNode.type });
@@ -166,11 +169,26 @@ const DnDFlow = () => {
     }
   };
 
-  const setCodeFromLabel = (updatedNode) => {
-    if (updatedNode.type === 'loop') {
-      updatedNode.data.condition = `env.${updatedNode.data.label}`;
+  const setLoopNodeCodeAndLabel = (updatedNode) => {
+    if (updatedNode.data.loopType === 'conditional') {
+      const { leftOperand, operator, rightOperand } = updatedNode.data;
+      const newLabel = `${leftOperand || ''} ${operator || ''} ${rightOperand || ''}`.trim() || 'conditional loop';
+      updatedNode.data.label = newLabel;
+
+      const getOperandCode = (operand) => {
+        if (operand && !isNaN(operand) && isFinite(operand)) {
+          return operand;
+        }
+        return `env.${operand}`;
+      };
+
+      if (leftOperand && operator && rightOperand) {
+        updatedNode.data.condition = `${getOperandCode(leftOperand)} ${operator} ${getOperandCode(rightOperand)}`;
+      }
+    } else {
+      updatedNode.data.label = 'Loop';
     }
-    return updatedNode;
+    return updatedNode
   }
 
   const setFunctionNodeCodeAndLabel = (updatedNode) => {
@@ -201,8 +219,17 @@ const DnDFlow = () => {
         var operand2 = updatedNode.data.operand2 ? `${updatedNode.data.operand2}` : '';
         labelText = `${target}${operand1}${updatedNode.data.operator}${operand2}`;
         updatedNode.data.label = labelText ? `${labelText}` : `四則演算`;
+        
+        const getOperandCode = (operand) => {
+          // オペランドが数値リテラルかどうかを判定
+          if (operand && !isNaN(operand) && isFinite(operand)) {
+            return operand;
+          }
+          return `env.${operand}`;
+        };
+
         if (updatedNode.data.target && updatedNode.data.operand1 && updatedNode.data.operator && updatedNode.data.operand2) {
-          codeText = `env.${updatedNode.data.target} = env.${updatedNode.data.operand1} ${updatedNode.data.operator} ${updatedNode.data.operand2};`;
+          codeText = `env.${updatedNode.data.target} = ${getOperandCode(updatedNode.data.operand1)} ${updatedNode.data.operator} ${getOperandCode(updatedNode.data.operand2)};`;
         }
         break;
       case 'output': 
@@ -262,7 +289,7 @@ const DnDFlow = () => {
     // タイムアウトを設けて、初期ノードのレンダリングを待つ
     setNodes(nds => nds.map(n => {
       if (n.type === 'function') return setFunctionNodeCodeAndLabel(n);
-      if (n.type === 'loop') return setCodeFromLabel(n);
+      if (n.type === 'loop') return setLoopNodeCodeAndLabel(n);
       return n;
     }));
 
