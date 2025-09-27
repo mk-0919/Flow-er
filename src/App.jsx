@@ -140,9 +140,12 @@ const DnDFlow = () => {
               data: { ...node.data, ...changes },
               style: { ...node.style, backgroundColor: changes.backgroundColor },
             };
-            if(updatedNode.type === 'function'){
-              updatedNode = setFunctionNodeLabel(updatedNode);
+            if (changes.label) {
+              updatedNode = setCodeFromLabel(updatedNode);
+            } else if (updatedNode.type === 'function') {
+              updatedNode = setFunctionNodeCodeAndLabel(updatedNode);
             }
+
             setSelectedElement({...updatedNode, type: 'node', nodeType: updatedNode.type });
             return updatedNode;
           }
@@ -161,35 +164,56 @@ const DnDFlow = () => {
     }
   };
 
-  const setFunctionNodeLabel = (updatedNode) => {
+  const setCodeFromLabel = (updatedNode) => {
+    if (updatedNode.type === 'loop') {
+      updatedNode.data.condition = `env.${updatedNode.data.label}`;
+    }
+    return updatedNode;
+  }
+
+  const setFunctionNodeCodeAndLabel = (updatedNode) => {
     var initialValue = "";
     var labelText = "";
+    var codeText = "";
 
     switch(updatedNode.data.operationType){
       case 'declare': 
         initialValue = updatedNode.data.value ? `=${updatedNode.data.value}` : '';
         labelText = updatedNode.data.variableName ? `${updatedNode.data.variableName}${initialValue}を` : '';
-        updatedNode.data.label = `${labelText}宣言`; 
+        updatedNode.data.label = `${labelText}宣言`;
+        if (updatedNode.data.variableName) {
+          codeText = `env.${updatedNode.data.variableName} = ${updatedNode.data.value || 'undefined'};`;
+        }
         break;
       case 'assign': 
         initialValue = updatedNode.data.value ? `に${updatedNode.data.value}` : '';
         labelText = updatedNode.data.variableName ? `${updatedNode.data.variableName}${initialValue}を` : '';
-        updatedNode.data.label = `${labelText}代入`; 
+        updatedNode.data.label = `${labelText}代入`;
+        if (updatedNode.data.variableName) {
+          codeText = `env.${updatedNode.data.variableName} = ${updatedNode.data.value || 'undefined'};`;
+        }
         break;
       case 'arithmetic': 
         var target = updatedNode.data.target ? `${updatedNode.data.target}=` : '';
         var operand1 = updatedNode.data.operand1 ? `${updatedNode.data.operand1}` : '';
         var operand2 = updatedNode.data.operand2 ? `${updatedNode.data.operand2}` : '';
         labelText = `${target}${operand1}${updatedNode.data.operator}${operand2}`;
-        updatedNode.data.label = labelText ? `${labelText}` : `四則演算`; 
+        updatedNode.data.label = labelText ? `${labelText}` : `四則演算`;
+        if (updatedNode.data.target && updatedNode.data.operand1 && updatedNode.data.operator && updatedNode.data.operand2) {
+          codeText = `env.${updatedNode.data.target} = env.${updatedNode.data.operand1} ${updatedNode.data.operator} ${updatedNode.data.operand2};`;
+        }
         break;
       case 'output': 
-        updatedNode.data.label = `${updatedNode.data.variableName}を出力`; 
+        updatedNode.data.label = `${updatedNode.data.variableName}を出力`;
+        if (updatedNode.data.variableName) {
+          codeText = `env.output = env.${updatedNode.data.variableName};`;
+        }
         break;
       default: 
         updatedNode.data.label = 'undefined';
         break;
     }
+    updatedNode.data.code = codeText;
     return updatedNode;
   }
 
@@ -234,6 +258,12 @@ const DnDFlow = () => {
   // 初回レンダリング時に自動グループ化を実行
   useEffect(() => {
     // タイムアウトを設けて、初期ノードのレンダリングを待つ
+    setNodes(nds => nds.map(n => {
+      if (n.type === 'function') return setFunctionNodeCodeAndLabel(n);
+      if (n.type === 'loop') return setCodeFromLabel(n);
+      return n;
+    }));
+
     const timer = setTimeout(() => checkAndAutoGroup(), 100);
     return () => clearTimeout(timer);
   }, [checkAndAutoGroup]);
