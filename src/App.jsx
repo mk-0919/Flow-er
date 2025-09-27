@@ -98,6 +98,8 @@ const DnDFlow = () => {
   const [stepInProgress, setStepInProgress] = useState(false);
   // ループコンテキストを保持するスタック
   const loopStackRef = useRef([]);
+  // 実行開始グループノードID
+  const [executionStartGroupId, setExecutionStartGroupId] = useState('');
   // 逐次実行時次のループでハイライトを消すノード
   const [highlightedNode, setHighlightedNode] = useState(null);
   
@@ -654,9 +656,31 @@ const DnDFlow = () => {
     setEnv({});
     loopStackRef.current = [];
     // 開始ノードから実行開始
-    const startNode = nodes.find((node) => node.type === 'start');
+    let startNode = null;
+    if (executionStartGroupId) {
+      // グループが指定されている場合、そのグループ内の開始ノードを探す
+      const childNodes = nodes.filter(n => n.parentId === executionStartGroupId);
+      // まずはグループ内の 'start' ノードを探す
+      startNode = childNodes.find(n => n.type === 'start');
+
+      // 'start' ノードがなければ、入力がないノードを探す
+      if (!startNode) {
+        const childNodeIds = new Set(childNodes.map(n => n.id));
+        startNode = childNodes.find(n => {
+          const incomingEdges = edges.filter(e => e.target === n.id);
+          // グループ内部の他ノードからの入力がないノードを開始ノードとする
+          return !incomingEdges.some(e => childNodeIds.has(e.source));
+        });
+      }
+    }
+
     if (!startNode) {
-      appendLog('エラー: 開始ノードが見つかりません');
+      // グループが指定されていない、またはグループ内の開始ノードが見つからない場合、全体の開始ノードを探す
+      startNode = nodes.find((node) => node.type === 'start');
+    }
+
+    if (!startNode) {
+      appendLog('エラー: 実行開始ノードが見つかりません');
       return;
     }
     let nextNodeId = startNode.id;
@@ -702,9 +726,28 @@ const DnDFlow = () => {
     );
     setStepEnv({});
     loopStackRef.current = [];
-    const startNode = nodes.find((node) => node.type === 'start');
+    let startNode = null;
+    if (executionStartGroupId) {
+      // グループが指定されている場合、そのグループ内の開始ノードを探す
+      const childNodes = nodes.filter(n => n.parentId === executionStartGroupId);
+      // まずはグループ内の 'start' ノードを探す
+      startNode = childNodes.find(n => n.type === 'start');
+
+      // 'start' ノードがなければ、入力がないノードを探す
+      if (!startNode) {
+        const childNodeIds = new Set(childNodes.map(n => n.id));
+        startNode = childNodes.find(n => {
+          const incomingEdges = edges.filter(e => e.target === n.id);
+          // グループ内部の他ノードからの入力がないノードを開始ノードとする
+          return !incomingEdges.some(e => childNodeIds.has(e.source));
+        });
+      }
+    }
     if (!startNode) {
-      appendLog('エラー: 開始ノードが見つかりません');
+      startNode = nodes.find((node) => node.type === 'start');
+    }
+    if (!startNode) {
+      appendLog('エラー: 実行開始ノードが見つかりません');
       return;
     }
     setStepNodeId(startNode.id);
@@ -880,6 +923,9 @@ const DnDFlow = () => {
               stepInProgress={stepInProgress}
               startStepExecution={startStepExecution}
               resultLog={resultLog}
+              nodes={nodes}
+              executionStartGroupId={executionStartGroupId}
+              setExecutionStartGroupId={setExecutionStartGroupId}
               logMessages={logMessages}
             />
           </Box>

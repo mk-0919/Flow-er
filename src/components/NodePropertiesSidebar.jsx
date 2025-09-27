@@ -39,6 +39,9 @@ const NodePropertiesSidebar = ({
   startStepExecution,
   runStep,
   resultLog,
+  nodes,
+  executionStartGroupId,
+  setExecutionStartGroupId,
   logMessages,
 }) => {
   const [activeTab, setActiveTab] = React.useState(0);
@@ -51,7 +54,9 @@ const NodePropertiesSidebar = ({
     }
   }, [resultLog, logMessages]);
 
-  if (!selectedElement) return null;
+  const groupNodes = React.useMemo(() => 
+    nodes.filter(node => node.type === 'group'), [nodes]
+  );
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -65,6 +70,8 @@ const NodePropertiesSidebar = ({
                   margin="normal"
                 />
  */
+
+  if (!selectedElement) return null;
 
   const renderProperties = () => {
     switch (selectedElement.type) {
@@ -103,6 +110,23 @@ const NodePropertiesSidebar = ({
                 gap: 2
               }}>
                 <Typography variant="h6">実行操作</Typography>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>開始グループ</InputLabel>
+                  <Select
+                    value={executionStartGroupId}
+                    label="開始グループ"
+                    onChange={(e) => setExecutionStartGroupId(e.target.value)}
+                  >
+                    <MenuItem value="">
+                      <em>先頭から実行</em>
+                    </MenuItem>
+                    {groupNodes.map(group => (
+                      <MenuItem key={group.id} value={group.id}>
+                        {group.data?.label || group.id}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <ButtonGroup 
                   variant="contained" 
                   fullWidth 
