@@ -48,13 +48,19 @@ const NodePropertiesSidebar = ({
 }) => {
   const [activeTab, setActiveTab] = React.useState(0);
   const theme = useTheme();
-  const logBoxRef = React.useRef(null);
+  const resultLogBoxRef = React.useRef(null);
+  const logMessagesBoxRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (logBoxRef.current) {
-      logBoxRef.current.scrollTop = logBoxRef.current.scrollHeight;
+    if (resultLogBoxRef.current) {
+      resultLogBoxRef.current.scrollTop = resultLogBoxRef.current.scrollHeight;
     }
-  }, [resultLog, logMessages]);
+  }, [resultLog]);
+  React.useEffect(() => {
+    if (logMessagesBoxRef.current) {
+      logMessagesBoxRef.current.scrollTop = logMessagesBoxRef.current.scrollHeight;
+    }
+  }, [logMessages]);
 
   const groupNodes = React.useMemo(() => 
     nodes.filter(node => node.type === 'group'), [nodes]
@@ -149,7 +155,7 @@ const NodePropertiesSidebar = ({
 
                 <Typography variant="h6">出力結果</Typography>
                 <Box
-                  ref={logBoxRef}
+                  ref={resultLogBoxRef}
                   sx={{
                     height: '200px',
                     overflowY: 'auto',
@@ -170,7 +176,7 @@ const NodePropertiesSidebar = ({
 
                 <Typography variant="h6">ログ出力</Typography>
                 <Box
-                  ref={logBoxRef}
+                  ref={logMessagesBoxRef}
                   sx={{
                     height: '200px',
                     overflowY: 'auto',
