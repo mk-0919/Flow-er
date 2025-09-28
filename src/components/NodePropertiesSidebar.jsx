@@ -469,7 +469,7 @@ const NodePropertiesSidebar = ({
         },
       }}
     >
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, pb: 8 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Properties</Typography>
           <IconButton onClick={() => setIsOpen(false)}>
