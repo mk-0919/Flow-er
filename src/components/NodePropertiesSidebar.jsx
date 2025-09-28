@@ -20,7 +20,8 @@ import { Close,
   ChevronRight, 
   PlayArrow,
   PlayCircleOutline,
-  SkipNext,} from '@mui/icons-material';
+  SkipNext,
+  StopCircleOutlined} from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
 import ConsoleOutput from './ConsoleOutput';
 import '../Nodes.css';
@@ -37,6 +38,7 @@ const NodePropertiesSidebar = ({
   runBatch,
   stepInProgress,
   startStepExecution,
+  stopStepExecution,
   runStep,
   resultLog,
   nodes,
@@ -130,11 +132,11 @@ const NodePropertiesSidebar = ({
                     Run All
                   </Button>
                   <Button
-                    onClick={startStepExecution}
-                    disabled={stepInProgress}
-                    startIcon={<PlayCircleOutline />}
+                    onClick={!stepInProgress ? startStepExecution : stopStepExecution}
+                    startIcon={!stepInProgress ? <PlayCircleOutline /> : <StopCircleOutlined />}
+                    color={stepInProgress ? "secondary" : "primary"}
                   >
-                    Start Step Execution
+                    {stepInProgress ? "Stop Step Execution" : "Start Step Execution"}
                   </Button>
                   <Button
                     onClick={runStep}

@@ -668,6 +668,7 @@ const DnDFlow = () => {
   const runBatch = async () => {
     // 状態リセット
     setResultLog('');
+    setLogMessages('');
     setNodes((nds) => 
       nds.map((node) => {
         const newStyle = { ...node.style };
@@ -739,6 +740,7 @@ const DnDFlow = () => {
   // 逐次実行モード
   const startStepExecution = () => {
     setResultLog('');
+    setLogMessages('');
     setNodes((nds) =>
       nds.map((node) => {
         const newStyle = { ...node.style };
@@ -781,6 +783,17 @@ const DnDFlow = () => {
     setStepInProgress(true);
     appendLog('逐次実行開始');
   };
+
+  const stopStepExecution = () => {
+    setStepInProgress(false);
+    appendLog('逐次実行が中断されました', 'warning');
+    if (highlightedNode) {
+      highlightNode(highlightedNode, null);
+    }
+    setHighlightedNode(null);
+    setStepNodeId(null);
+  };
+
   const runStep = async () => {
     if (!stepNodeId) {
       appendLog('エラー: 逐次実行中のノードが見つかりません');
@@ -949,6 +962,7 @@ const DnDFlow = () => {
               runStep={runStep}
               stepInProgress={stepInProgress}
               startStepExecution={startStepExecution}
+              stopStepExecution={stopStepExecution}
               resultLog={resultLog}
               nodes={nodes}
               executionStartGroupId={executionStartGroupId}
