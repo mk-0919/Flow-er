@@ -153,6 +153,7 @@ const NodePropertiesSidebar = ({
                   sx={{
                     height: '200px',
                     overflowY: 'auto',
+                    resize: 'vertical',
                     bgcolor: theme.palette.mode === 'dark' ? 'grey.900' : 'grey.100',
                     p: 2,
                     borderRadius: 1,
@@ -173,6 +174,7 @@ const NodePropertiesSidebar = ({
                   sx={{
                     height: '200px',
                     overflowY: 'auto',
+                    resize: 'vertical',
                     bgcolor: theme.palette.mode === 'dark' ? 'grey.900' : 'grey.100',
                     p: 2,
                     borderRadius: 1,
